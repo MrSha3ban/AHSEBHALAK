@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AHSEBHALAK </title>
+    <style>
+        :root {
+            --primary: #2c3e50; --accent: #c0392b; --success: #27ae60; --gray: #ecf0f1; --gold: #f39c12;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #dfe4ea; margin: 0; padding: 20px; color: #2f3542; }
+        .wrapper { max-width: 1200px; margin: auto; background: white; border-radius: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; border: 1px solid #ccc; }
+        
+        /* Header */
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; border-bottom: 5px solid var(--gold); }
+        .header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+
+        /* Main Layout */
+        .content { display: grid; grid-template-columns: 360px 1fr; gap: 25px; padding: 30px; }
+        
+        /* Settings Panel */
+        .settings-panel { background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e1e4e8; }
+        .section-title { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 10px; margin: 20px 0 15px; font-weight: bold; font-size: 15px; }
+        .section-title:first-child { margin-top: 0; }
+        
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 12.5px; font-weight: bold; margin-bottom: 5px; color: #57606f; }
+        input, select { width: 100%; padding: 11px; border-radius: 6px; border: 1px solid #ced4da; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 5px rgba(243, 156, 18, 0.3); }
+
+        /* Dashboard & Cards */
+        .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .card { background: white; border-left: 5px solid var(--primary); padding: 18px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; }
+        .card h3 { margin: 0; color: #747d8c; font-size: 13px; text-transform: uppercase; }
+        .card .value { font-size: 26px; font-weight: bold; color: var(--primary); margin: 8px 0; }
+        .card.highlight { border-left-color: var(--gold); }
+
+        /* Results Table */
+        .table-container { margin-top: 25px; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #f1f2f6; color: var(--primary); padding: 12px; text-align: center; border-bottom: 2px solid #ddd; }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
+        tr:last-child td { border-bottom: none; }
+
+        /* Contact Footer */
+        .contact-footer { background: #f1f2f6; padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; font-size: 14px; }
+        .contact-item { display: flex; align-items: center; gap: 8px; margin: 5px 15px; color: var(--primary); text-decoration: none; font-weight: 500; }
+        .contact-item i { color: var(--accent); }
+        .contact-item:hover { color: var(--accent); }
+
+        /* Buttons */
+        .btn-group { padding: 0 30px 30px; display: flex; gap: 15px; }
+        button { flex: 1; padding: 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        .btn-calc { background: var(--success); color: white; }
+        .btn-print { background: var(--primary); color: white; }
+        button:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+        @media print { 
+            .settings-panel, .btn-group, .contact-footer { display: none; } 
+            .wrapper { box-shadow: none; border: none; }
+            body { background: white; padding: 0; }
+        }
+        @media (max-width: 850px) {
+            .content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">
+        <h1>أحسبهالك...    </h1>
+        <p>نظام حساب استهلاك الخيوط بمجال الملابس الجاهزة </p>
+    </div>
+
+    <div class="content">
+        <aside class="settings-panel">
+            <div class="section-title">إعدادات الماكينة</div>
+            <div class="input-group">
+                <label>نوع الماكينة الرئيسي:</label>
+                <select id="machineType" onchange="updateSubTypes()">
+                    <option value="lockstitch">سنجر (Lockstitch 301)</option>
+                    <option value="overlock" selected>أوفرلوك (Overlock)</option>
+                    <option value="coverstitch">أورليه (Coverstitch)</option>
+                    <option value="chainstitch">سلسلة (Chainstitch)</option>
+                    <option value="multineedle">كين لوي (Multi-needle)</option>
+                    <option value="bar-tack">الفاتورة / العراوي</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>توزيع الإبر والفتل (الغرزة):</label>
+                <select id="subType"></select>
+            </div>
+
+            <div class="section-title">بيانات التشغيل (Production)</div>
+            <div class="input-group">
+                <label>طول الخياطة في القطعة (CM):</label>
+                <input type="number" id="lengthCM" value="150">
+            </div>
+            <div class="input-group">
+                <label>إجمالي الكمية (عدد القطع):</label>
+                <input type="number" id="qty" value="1000">
+            </div>
+            <div class="input-group">
+                <label>نسبة الهالك التشغيلي (%):</label>
+                <input type="number" id="waste" value="15">
+            </div>
+
+            <div class="section-title">المواصفات التجارية</div>
+            <div class="input-group">
+                <label>طول البكرة التجاري (Yard):</label>
+                <input type="number" id="coneYard" value="5000">
+            </div>
+            <div class="input-group">
+                <label>نمرة الخيط (Tex):</label>
+                <input type="number" id="threadTex" value="27">
+            </div>
+            <div class="input-group">
+                <label>سعر البكرة الواحدة:</label>
+                <input type="number" id="price" value="0">
+            </div>
+        </aside>
+
+        <main>
+            <div class="dashboard">
+                <div class="card">
+                    <h3>إجمالي أمتار الخيط</h3>
+                    <div class="value" id="dispTotal">0 <small>م</small></div>
+                </div>
+                <div class="card highlight">
+                    <h3>البكرات المطلوبة (Cones)</h3>
+                    <div class="value" id="dispCones">0</div>
+                </div>
+                <div class="card">
+                    <h3>الوزن الصافي التقديري</h3>
+                    <div class="value" id="dispWeight">0 <small>جم</small></div>
+                </div>
+                <div class="card">
+                    <h3>التكلفة الإجمالية للطلب</h3>
+                    <div class="value" id="dispCost" style="color: var(--success);">0</div>
+                </div>
+            </div>
+
+            <div class="section-title">تحليل استهلاك الخيوط الفني (Thread Breakdown)</div>
+            <div class="table-container">
+                <table id="analysisTable">
+                    <thead>
+                        <tr>
+                            <th>نوع الخيط بالماكينة</th>
+                            <th>نسبة التوزيع</th>
+                            <th>الطول المطلوب (متر)</th>
+                            <th>عدد البكرات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            <p style="font-size: 11px; color: #777; margin-top: 15px;">* ملاحظة: يتم حساب عدد البكرات بالتقريب للأعلى لضمان كفاية الخيط أثناء الإنتاج.</p>
+        </main>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-calc" onclick="calculateAll()">تحديث الحسابات الآن</button>
+        <button class="btn-print" onclick="window.print()">استخراج تقرير </button>
+    </div>
+
+    <footer class="contact-footer">
+        <a href="mailto:M.sha3ban@hotmail.com" class="contact-item">📧 M.sha3ban@hotmail.com</a>
+        <a href="https://wa.me/201066800808" class="contact-item">💬 WhatsApp: 01066800808</a>
+        <a href="https://www.linkedin.com/in/mr-sha3ban/" target="_blank" class="contact-item">🔗 LinkedIn: mr-sha3ban</a>
+    </footer>
+</div>
+
+<script>
+    const machineData = {
+        lockstitch: { looper: 0.5, subs: [{n: "سنجر إبرة واحدة (301)", f: 2.8}] },
+        overlock: { looper: 0.72, subs: [{n: "3 فتلة", f: 14}, {n: "4 فتلة (تنظيف وتمكين)", f: 18}, {n: "5 فتلة (أمان)", f: 22}] },
+        coverstitch: { looper: 0.65, subs: [{n: "إبرتين (Narrow)", f: 16}, {n: "3 إبر (Wide)", f: 23}, {n: "3 إبر مع تغطية علوية", f: 28}] },
+        multineedle: { looper: 0.82, subs: [{n: "4 إبر (كين لوي)", f: 35}, {n: "12 إبرة (مطاط)", f: 90}] },
+        chainstitch: { looper: 0.6, subs: [{n: "إبرة واحدة (سلسلة)", f: 5.5}, {n: "إبرتين (جنب بنطلون)", f: 11}] },
+        "bar-tack": { looper: 0.5, subs: [{n: "غرزة عروة عادية", f: 1.5}, {n: "تثبيت (Bar-tack)", f: 0.8}, {n: "زراير", f: 0.6}] }
+    };
+
+    function updateSubTypes() {
+        const main = document.getElementById('machineType').value;
+        const subSelect = document.getElementById('subType');
+        subSelect.innerHTML = "";
+        machineData[main].subs.forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = s.f; opt.text = s.n;
+            subSelect.add(opt);
+        });
+    }
+
+    function calculateAll() {
+        const factor = parseFloat(document.getElementById('subType').value);
+        const L_cm = parseFloat(document.getElementById('lengthCM').value) || 0;
+        const N = parseFloat(document.getElementById('qty').value) || 0;
+        const W = (parseFloat(document.getElementById('waste').value) / 100) + 1;
+        const coneYard = parseFloat(document.getElementById('coneYard').value) || 5000;
+        const tex = parseFloat(document.getElementById('threadTex').value) || 27;
+        const price = parseFloat(document.getElementById('price').value) || 0;
+        const mainType = document.getElementById('machineType').value;
+
+        const coneMeter = coneYard * 0.9144;
+        const totalMeters = (L_cm / 100) * factor * N * W;
+        const totalCones = totalMeters / coneMeter;
+        const totalWeight = (totalMeters * tex) / 1000;
+        const totalCost = Math.ceil(totalCones) * price;
+
+        document.getElementById('dispTotal').innerHTML = Math.round(totalMeters).toLocaleString() + " <small>م</small>";
+        document.getElementById('dispCones').innerText = Math.ceil(totalCones);
+        document.getElementById('dispWeight').innerHTML = Math.round(totalWeight).toLocaleString() + " <small>جم</small>";
+        document.getElementById('dispCost').innerText = totalCost.toFixed(2);
+
+        const looperRatio = machineData[mainType].looper;
+        const tbody = document.querySelector('#analysisTable tbody');
+        tbody.innerHTML = `
+            <tr><td>خيوط الكروشيه / التغطية</td><td>${Math.round(looperRatio*100)}%</td><td>${Math.round(totalMeters*looperRatio).toLocaleString()}</td><td>${Math.ceil(totalCones*looperRatio)}</td></tr>
+            <tr><td>خيوط الإبر (Needles)</td><td>${Math.round((1-looperRatio)*100)}%</td><td>${Math.round(totalMeters*(1-looperRatio)).toLocaleString()}</td><td>${Math.ceil(totalCones*(1-looperRatio))}</td></tr>
+        `;
+    }
+
+    window.onload = updateSubTypes;
+</script>
+</body>
+</html>
